@@ -22,13 +22,13 @@
 <!-- /TOC -->
 
 ## **概述**
-* Redis是一个开源的，基于内存的结构化数据存储媒介，可以作为数据库、缓存服务或消息服务使用。
-* Redis支持多种数据结构，包括字符串、哈希表、链表、集合、有序集合、位图、Hyperloglogs等。
-* Redis具备LRU淘汰、事务实现、以及不同级别的硬盘持久化等能力，支持副本集和通过Redis Sentinel实现的高可用方案，同时还支持通过Redis Cluster实现的数据自动分片能力。
-* Redis的主要功能都基于单线程模型实现，同时Redis采用了非阻塞式IO，并精细地优化各种命令的算法时间复杂度，这些信息意味着：
-    + Redis是线程安全的（因为只有一个线程），其所有操作都是原子的，不会因并发产生数据异常
-    + Redis的速度非常快（因为使用非阻塞式IO，且大部分命令的算法时间复杂度都是O(1))
-    + 使用高耗时的Redis命令是很危险的，会占用唯一的一个线程的大量处理时间，导致所有的请求都被拖慢。
+* **Redis是一个开源的，基于内存的结构化数据存储媒介，可以作为数据库、缓存服务或消息服务使用。**
+* **Redis支持多种数据结构，包括字符串、哈希表、链表、集合、有序集合、位图、Hyperloglogs等。**
+* **Redis具备LRU淘汰、事务实现、以及不同级别的硬盘持久化等能力，支持副本集和通过Redis Sentinel实现的高可用方案，同时还支持通过Redis Cluster实现的数据自动分片能力。**
+* **Redis的主要功能都基于单线程模型实现，同时Redis采用了非阻塞式IO，并精细地优化各种命令的算法时间复杂度**，这些信息意味着：
+    + **Redis是线程安全的（因为只有一个线程），其所有操作都是原子的，不会因并发产生数据异常**
+    + **Redis的速度非常快（因为使用非阻塞式IO，且大部分命令的算法时间复杂度都是O(1))**
+    + **使用高耗时的Redis命令是很危险的，会占用唯一的一个线程的大量处理时间，导致所有的请求都被拖慢。**
 ## **1. Redis的数据结构和相关常用命令**
 ### 1.1 Key
 Redis采用Key-Value型的基本数据结构，
@@ -37,36 +37,37 @@ Redis采用Key-Value型的基本数据结构，
 * Key短也是不好的，可读性和可维护性上的考虑
 * 最好使用统一的规范来设计Key
 * Redis允许的最大Key长度是512MB（对Value的长度限制也是512MB）
+
 ### 1.2 String
-String是Redis的基础数据类型，Redis没有Int、Float、Boolean等数据类型的概念，所有的基本类型在Redis中都以String体现。  
+**String是Redis的基础数据类型**，Redis没有Int、Float、Boolean等数据类型的概念，所有的基本类型在Redis中都以String体现。  
 
 与String相关的常用命令：
 * **SET**：为一个key设置value，可以配合EX/PX参数指定key的有效期，通过NX/XX参数针对key是否存在的情况进行区别操作，时间复杂度O(1)
-* GET：获取某个key对应的value，时间复杂度O(1)
-* GETSET：为一个key设置value，并返回该key的原value，时间复杂度O(1)
-* MSET：为多个key设置value，时间复杂度O(N)
+* **GET**：获取某个key对应的value，时间复杂度O(1)
+* **GETSET**：为一个key设置value，并返回该key的原value，时间复杂度O(1)
+* **MSET**：为多个key设置value，时间复杂度O(N)
 * MSETNX：同MSET，如果指定的key中有任意一个已存在，则不进行任何操作，时间复杂度O(N)
 * MGET：获取多个key对应的value，时间复杂度O(N)  
 
 把String作为整型或浮点型数字来使用，只对可以转换为整型的String数据起作用，主要体现在INCR、DECR类的命令上：
-* INCR：value值自增1，并返回自增后的值。时间复杂度O(1)
-* INCRBY：value值自增指定的整型数值，并返回自增后的值。。时间复杂度O(1)
+* **INCR**：value值自增1，并返回自增后的值。时间复杂度O(1)
+* **INCRBY**：value值自增指定的整型数值，并返回自增后的值。。时间复杂度O(1)
 * DECR/DECRBY：同INCR/INCRBY，自增改为自减。  
 
 INCR/DECR系列命令要求操作的value类型为String，必须在[-2^63 ~ 2^63 - 1]范围内。
 使用场景：
-+ 例1：库存控制，在高并发场景下实现库存余量的精准校验，确保不出现超卖的情况。
-+ 例2：自增序列生成，生成一系列唯一的序列号
++ **例1：库存控制**，在高并发场景下实现库存余量的精准校验，确保不出现超卖的情况。
++ **例2：自增序列生成**，生成一系列唯一的序列号
 
 ### 1.3 List
 Redis的List是**链表型**的数据结构。
 与List相关的常用命令：
-* LPUSH：向List的左侧（即头部）插入1个或多个元素，返回插入后的List长度。时间复杂度O(N)
-* RPUSH：同LPUSH，向List的右侧（即尾部）插入1或多个元素
+* **LPUSH**：向List的左侧（即头部）插入1个或多个元素，返回插入后的List长度。时间复杂度O(N)
+* **RPUSH**：同LPUSH，向List的右侧（即尾部）插入1或多个元素
 * LPOP：从List的左侧（即头部）移除一个元素并返回，时间复杂度O(1)
 * RPOP：同LPOP，从指定List的右侧（即尾部）移除1个元素并返回
 * LPUSHX/RPUSHX：与LPUSH/RPUSH类似，区别在于，LPUSHX/RPUSHX操作的key如果不存在，则不会进行任何操作
-* LLEN：返回指定List的长度，时间复杂度O(1)
+* **LLEN**：返回指定List的长度，时间复杂度O(1)
 * LRANGE：返回指定List中指定范围的元素（双端包含，即LRANGE key 0 10会返回11个元素），时间复杂度O(N)。应尽可能控制一次获取的元素数量，一次获取过大范围的List元素会导致延迟，同时对长度不可预知的List，避免使用LRANGE key 0 -1这样的完整遍历操作。
 
 应谨慎使用的List相关命令：
@@ -74,6 +75,7 @@ Redis的List是**链表型**的数据结构。
 * LSET：将指定List指定index上的元素设置为value，如果index越界则返回错误，时间复杂度O(N)，如果操作的是头/尾部的元素，则时间复杂度为O(1)
 * LINSERT：向指定List中指定元素之前/之后插入一个新元素，并返回操作后的List长度。如果指定的元素不存在，返回-1。如果指定key不存在，不会进行任何操作，时间复杂度O(N)
 * BLPOP/BRPOP等，能够实现类似于BlockingQueue的能力，即在List为空时，阻塞该连接，直到List中有对象可以出队时再返回。
+
 ### 1.4 Hash
 Hash即哈希表，可以理解成将HashMap搬入Redis。  
 Hash非常适合用于表现对象类型的数据，用Hash中的field对应对象的field即可。  
@@ -83,8 +85,8 @@ Hash的优点包括：
 * 当使用Hash维护一个集合时，提供了比List效率高得多的随机访问命令
 
 与Hash相关的常用命令：
-* HSET：将key对应的Hash中的field设置为value。如果该Hash不存在，会自动创建一个。时间复杂度O(1)
-* HGET：返回指定Hash中field字段的值，时间复杂度O(1)
+* **HSET**：将key对应的Hash中的field设置为value。如果该Hash不存在，会自动创建一个。时间复杂度O(1)
+* **HGET**：返回指定Hash中field字段的值，时间复杂度O(1)
 * HMSET/HMGET：同HSET和HGET，可以批量操作同一个key下的多个field，时间复杂度：O(N)，N为一次操作的field数量
 * HSETNX：同HSET，但如field已经存在，HSETNX不会进行任何操作，时间复杂度O(1)
 * HEXISTS：判断指定Hash中field是否存在，存在返回1，不存在返回0，时间复杂度O(1)
@@ -97,7 +99,7 @@ Hash的优点包括：
 ### 1.5 Set
 Redis Set是无序的，不可重复的String集合。
 与Set相关的常用命令：
-* SADD：向指定Set中添加1个或多个member，如果指定Set不存在，会自动创建一个。时间复杂度O(N)，N为添加的member个数
+* **SADD**：向指定Set中添加1个或多个member，如果指定Set不存在，会自动创建一个。时间复杂度O(N)，N为添加的member个数
 * SREM：从指定Set中移除1个或多个member，时间复杂度O(N)，N为移除的member个数
 * SRANDMEMBER：从指定Set中随机返回1个或多个member，时间复杂度O(N)，N为返回的member个数
 * SPOP：从指定Set中随机移除并返回count个member，时间复杂度O(N)，N为移除的member个数
@@ -128,16 +130,14 @@ Sorted Set的主要命令：
 * ZRANGEBYSCORE/ZREVRANGEBYSCORE：返回指定Sorted Set中指定score范围内的所有member，返回结果以升序/降序排序，min和max可以指定为-inf和+inf，代表返回所有的member。时间复杂度O(log(N)+M)
 * ZREMRANGEBYRANK/ZREMRANGEBYSCORE：移除Sorted Set中指定排名范围/指定score范围内的所有member。时间复杂度O(log(N)+M)  
 
-上述几个命令，应尽量避免传递[0 -1]或[-inf +inf]这样的参数，来对Sorted Set做一次性的完整遍历，特别是在Sorted Set的尺寸不可预知的情况下。可以通过ZSCAN命令来进行游标式的遍历，或通过LIMIT参数来限制返回member的数量（适用于ZRANGEBYSCORE和ZREVRANGEBYSCORE命令），以实现游标式的遍历。
-
 ### 1.6 Bitmap和HyperLogLog
 Bitmap在Redis中不是一种实际的数据类型，而是一种将String作为Bitmap使用的方法。可以理解为将String转换为bit数组。使用Bitmap来存储true/false类型的简单数据极为节省空间。
 
 HyperLogLogs是一种主要用于数量统计的数据结构，它和Set类似，维护一个不可重复的String集合，但是HyperLogLogs并不维护具体的member内容，只维护member的个数。也就是说，HyperLogLogs只能用于计算一个集合中不重复的元素数量，所以它比Set要节省很多内存空间。
 
 ### 1.7 其他常用命令
-* EXISTS：判断指定的key是否存在，返回1代表存在，0代表不存在，时间复杂度O(1)
-* DEL：删除指定的key及其对应的value，时间复杂度O(N)，N为删除的key数量
+* **EXISTS**：判断指定的key是否存在，返回1代表存在，0代表不存在，时间复杂度O(1)
+* **DEL**：删除指定的key及其对应的value，时间复杂度O(N)，N为删除的key数量
 * EXPIRE/PEXPIRE：为一个key设置有效期，单位为秒或毫秒，时间复杂度O(1)
 * TTL/PTTL：返回一个key剩余的有效时间，单位为秒或毫秒，时间复杂度O(1)
 * RENAME/RENAMENX：将key重命名为newkey。使用RENAME时，如果newkey已经存在，其值会被覆盖；使用RENAMENX时，如果newkey已经存在，则不会进行任何操作，时间复杂度O(1)
@@ -153,7 +153,7 @@ Redis的数据持久化机制是可以关闭的。但通常来说，仍然建议
 * 现在硬盘那么大，真的不缺那一点地方
 
 ### 2.1 RDB
-采用RDB持久方式，Redis会定期保存数据快照至一个rbd文件中，并在启动时自动加载rdb文件，恢复之前保存的数据。可以在配置文件中配置Redis进行快照保存的时机：
+采用RDB持久方式，**Redis会fork出一个子进程定期保存数据快照至一个rbd文件中，并在启动时自动加载rdb文件，恢复之前保存的数据**。可以在配置文件中配置Redis进行快照保存的时机：
 ```
 save [seconds] [changes]
 意为在[seconds]秒内如果发生了[changes]次数据修改，则进行一次RDB快照保存，例如
@@ -167,20 +167,20 @@ save 60 10000
 也可以通过BGSAVE命令手工触发RDB快照保存。
 ```
 RDB的优点：
-* 对性能影响最小。如前文所述，Redis在保存RDB快照时会fork出子进程进行，几乎不影响Redis处理客户端请求的效率。
+* **对性能影响最小**。如前文所述，Redis在保存RDB快照时会fork出子进程进行，几乎不影响Redis处理客户端请求的效率。
 * 每次快照会生成一个完整的数据快照文件，所以可以辅以其他手段保存多个时间点的快照（例如把每天0点的快照备份至其他存储媒介中），作为非常可靠的灾难恢复手段。
 * 使用RDB文件进行数据恢复比使用AOF要快很多。
 RDB的缺点：
-* 快照是定期生成的，所以在Redis crash时或多或少会丢失一部分数据。
+* **快照是定期生成的，所以在Redis crash时或多或少会丢失一部分数据**。
 * 如果数据集非常大且CPU不够强（比如单核CPU），Redis在fork子进程时可能会消耗相对较长的时间（长至1秒），影响这期间的客户端请求。
 ### 2.2 AOF
-采用AOF持久方式时，Redis会把每一个写请求都记录在一个日志文件里。在Redis重启时，会把AOF文件中记录的所有写操作顺序执行一遍，确保数据恢复到最新。  
+采用AOF持久方式时，**Redis会把每一个写请求都记录在一个日志文件里。在Redis重启时，会把AOF文件中记录的所有写操作顺序执行一遍，确保数据恢复到最新。**  
 AOF默认是关闭的，如要开启，进行如下配置：  
 appendonly yes  
 AOF提供了三种fsync配置，always/everysec/no，通过配置项[appendfsync]指定：
-* appendfsync no：不进行fsync，将flush文件的时机交给OS决定，速度最快
-* appendfsync always：每写入一条日志就进行一次fsync操作，数据安全性最高，但速度最慢
-* appendfsync everysec：折中的做法，交由后台线程每秒fsync一次  
+* **appendfsync no：不进行fsync，将flush文件的时机交给OS决定，速度最快**
+* **appendfsync always：每写入一条日志就进行一次fsync操作，数据安全性最高，但速度最慢**
+* **appendfsync everysec：折中的做法，交由后台线程每秒fsync一次**  
 
 随着AOF不断地记录写操作日志，必定会出现一些无用的日志，例如某个时间点执行了命令SET key1 "abc"，在之后某个时间点又执行了SET key1 "bcd"，那么第一条命令很显然是没有用的。大量的无用日志会让AOF文件过大，也会让数据恢复的时间过长。 
 
@@ -216,11 +216,11 @@ maxmemory 100mb
 数据淘汰机制
 
 Redis提供了5种数据淘汰策略：
-* volatile-lru：使用LRU算法进行数据淘汰（淘汰上次使用时间最早的，且使用次数最少的key），只淘汰设定了有效期的key
-* allkeys-lru：使用LRU算法进行数据淘汰，所有的key都可以被淘汰
-* volatile-random：随机淘汰数据，只淘汰设定了有效期的key
-* allkeys-random：随机淘汰数据，所有的key都可以被淘汰
-* volatile-ttl：淘汰剩余有效期最短的key  
+* **volatile-lru：使用LRU算法进行数据淘汰（淘汰上次使用时间最早的，且使用次数最少的key），只淘汰设定了有效期的key**
+* **allkeys-lru：使用LRU算法进行数据淘汰，所有的key都可以被淘汰**
+* **volatile-random：随机淘汰数据，只淘汰设定了有效期的key**
+* **allkeys-random：随机淘汰数据，所有的key都可以被淘汰**
+* **volatile-ttl：淘汰剩余有效期最短的key**  
 
 最好为Redis指定一种有效的数据淘汰策略以配合maxmemory设置，避免在内存使用满后发生写入失败的情况。
 一般来说，推荐使用的策略是volatile-lru，并辨识Redis中保存的数据的重要性。对于那些重要的，绝对不能丢弃的数据（如配置类数据等），应不设置有效期，这样Redis就永远不会淘汰这些数据。对于那些相对不是那么重要的，并且能够热加载的数据（比如缓存最近登录的用户信息，当在Redis中找不到时，程序会去DB中读取），可以设置上有效期，这样在内存不够时Redis就会淘汰这部分数据。

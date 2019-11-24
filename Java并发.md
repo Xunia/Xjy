@@ -101,6 +101,28 @@
 
 ## 2. **Base-Thread**
 ### 1.1 创建Thread的几种方式？
+1. 继承Thread
+2. 实现Runable接口
+3. 实现Callable接口  
+
+Executors框架了解下newSingleThreadExecutor()
+
+```
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Task task = new Task();
+        Future<Integer> result = executor.submit(task);
+        executor.shutdown();
+```
+
+
+```
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Task task = new Task();
+        FutureTask<Integer> futureTask = new FutureTask<Integer>(task);
+        executor.submit(futureTask);
+        executor.shutdown();
+```
+
 ### 1.2 Thread的状态及转换？
 ### 1.3 Thread几个主要方法？
 ### 1.4 Daemon守护线程及使用注意点？

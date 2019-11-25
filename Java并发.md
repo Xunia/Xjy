@@ -124,7 +124,23 @@ Executors框架了解下newSingleThreadExecutor()
 ```
 
 ### 1.2 Thread的状态及转换？
+NEW  
+RUNNABLE: start() + READY: yield()   
+WAITING: wait(),join(),LockSupport.lock()   
+TIMED WAITING: wait(long timeout)，sleep(long),join(long),LockSupport.parkNanos(),LockSupport.parkUtil()   
+BLOCKED: synchronized
+TERMINATED
+
 ### 1.3 Thread几个主要方法？
+interrupt()  
+isinterrupted()  
+interrupted()  
+join()  
+join(long millis)  
+sleep()  
+yeild()
+
+
 ### 1.4 Daemon守护线程及使用注意点？
 
 ## 3. **Base-JMM及重排序**

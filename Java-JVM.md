@@ -1,3 +1,5 @@
+
+## JVM内存模型
 Oracle的HotSpot JVM   
 JVM由4大部分组成：ClassLoader，Runtime Data Area，Execution Engine，Native Interface。  
 Runtime Data Area则是存放数据的，分为五部分：Stack，Heap，Method Area，PC Register，Native Method Stack。
@@ -7,8 +9,6 @@ HotSpot JVM中把Method Area划分为非堆内存
 NonHeap包含PermGen和Code Cache，PermGen包含Method Area,而且PermGen在JAVA SE 8中已经不再用了。
 java8中PermGen已经从JVM中移除并被MetaSpace取代
 
-栈帧:StackFrame包含三类信息：局部变量，执行环境，操作数栈
-
 Heap:
 Young Generation和Old Generation（也叫Tenured Generation）两大部分。Young Generation分为Eden和Survivor，Survivor又分为From Space和 ToSpace。
 
@@ -17,12 +17,63 @@ Young Generation和Old Generation（也叫Tenured Generation）两大部分。Y
 Method Area包含Runtime Constant Pool（静态池）
 
 
+## 回收算法
+
+1.标记清除算法，该算法是从根集合扫描整个空间，标记存活的对象，然后在扫描整个空间对没有被标记的对象进行回收，这种算法在存活对象较多时比较高效，但会产生内存碎片。
+
+2.复制算法，该算法是从根集合扫描，并将存活的对象复制到新的空间，这种算法在存活对象少时比较高效。
+
+3.标记整理算法，标记整理算法和标记清除算法一样都会扫描并标记存活对象，在回收未标记对象的同时会整理被标记的对象，解决了内存碎片的问题。
+
+
+## 什么情况下回出现内存溢出，内存泄漏？
 
 栈一般会发生以下两种异常：
-
 1.当线程中的计算所需要的栈超过所允许大小时，会抛出StackOverflowError。
+2.当Java栈试图扩展时，没有足够的存储器来实现扩展，JVM会报OutOfMemoryError。   
 
-2.当Java栈试图扩展时，没有足够的存储器来实现扩展，JVM会报OutOfMemoryError。    我针对栈进行了实验，由于递归的调用可以致使栈的引用增加，导致溢出，所以设计代码如下：
+
+## Java线程栈
+Xss
+e.printStackTrace()
+栈帧:StackFrame包含三类信息：局部变量，执行环境，操作数栈
+
+
+## JVM 年轻代到年老代的晋升过程的判断条件是什么呢？
+大数据
+存活次数
+
+## VM 出现 fullGC 很频繁，怎么去线上排查问题
+1.程序执行了System.gc() //建议jvm执行fullgc，并不一定会执行
+2.执行了jmap -histo:live pid命令 //这个会立即触发fullgc
+3.在执行minor gc的时候进行的一系列检查
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Old Space中则存放生命周期比较长的对象，而且有些比较大的新生对象也放在Old Space中。
 
@@ -37,11 +88,7 @@ GCFlag收集垃圾回收日志
 
 
 
-1.标记清除算法，该算法是从根集合扫描整个空间，标记存活的对象，然后在扫描整个空间对没有被标记的对象进行回收，这种算法在存活对象较多时比较高效，但会产生内存碎片。
 
-2.复制算法，该算法是从根集合扫描，并将存活的对象复制到新的空间，这种算法在存活对象少时比较高效。
-
-3.标记整理算法，标记整理算法和标记清除算法一样都会扫描并标记存活对象，在回收未标记对象的同时会整理被标记的对象，解决了内存碎片的问题。
 
 
 1.Serial GC。单线程的，所以它要求收集的时候所有的线程暂停。这对于高性能的应用是不合理的，所以串行GC一般用于Client模式的JVM中。
